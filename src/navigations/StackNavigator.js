@@ -6,9 +6,9 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Easing} from 'react-native';
 
 import Login from '../screens/Login';
-// import Logout from '../screens/Logout';
-// import AddTodo from '../screens/AddTodo';
-// import Todos from '../screens/Todos';
+import Logout from '../screens/Logout';
+import AddTodo from '../screens/AddTodo';
+import Todos from '../screens/Todos';
 import SplashScreen from '../screens/SplashScreen';
 
 const config = {
@@ -51,12 +51,10 @@ class StackNavigator extends React.Component {
               },
             }}>
             <Stack.Screen name="SplashScreen" component={SplashScreen} />
-
             <Stack.Screen name="Login" component={Login} />
-            {/* <Stack.Screen name="Logout" component={Logout} />
-            <Stack.Screen name="AddTodo" component={AddTodo} />
             <Stack.Screen name="Todos" component={Todos} />
-            */}
+            <Stack.Screen name="Logout" component={Logout} />
+            <Stack.Screen name="AddTodo" component={AddTodo} />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>

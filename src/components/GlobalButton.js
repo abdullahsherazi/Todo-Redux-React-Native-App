@@ -1,9 +1,7 @@
 import React from 'react';
 import colors from '../constants/colors';
 import fontSizes from '../constants/fontSizes';
-import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
-import FontAwesome from 'react-native-vector-icons/dist/FontAwesome';
-import globalStyling from '../constants/globalStyling';
+import {Text, TouchableOpacity} from 'react-native';
 
 export default class GlobalButton extends React.Component {
   render() {
@@ -12,7 +10,7 @@ export default class GlobalButton extends React.Component {
         style={{
           width: this.props.width ? this.props.width : '90%',
           flexDirection: 'row',
-          height: this.props.height ? this.props.height : 43,
+          height: this.props.height ? this.props.height : 50,
           marginTop: this.props.marginTop ? this.props.marginTop : 10,
           alignItems: 'center',
           justifyContent: 'center',
@@ -51,12 +49,3 @@ export default class GlobalButton extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  viewStyling: {
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

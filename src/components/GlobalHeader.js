@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {TouchableOpacity, StyleSheet, Image, View, Text} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
 import {bindActionCreators} from 'redux';
 import * as reduxActions from '../redux/actions/actions';
 import {connect} from 'react-redux';

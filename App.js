@@ -1,7 +1,7 @@
 import React from 'react';
 import {StatusBar, View, Text} from 'react-native';
 import StackNavigator from './src/navigations/StackNavigator';
-// import BottomTab from './src/components/BottomTab';
+import BottomTab from './src/components/BottomTab';
 import {Provider} from 'react-redux';
 import store from './src/redux/store';
 import Loader from './src/components/Loader';

@@ -9,122 +9,82 @@ import {connect} from 'react-redux';
 class BottomTab extends Component {
   componentDidMount() {
     global.setFocused = (item) => {
-      if (item === 'home') {
+      if (item === 'todos') {
         this.setState({
-          home: true,
-          search: false,
-          profile: false,
-          contactUs: false,
+          todos: true,
+          addTodo: false,
+          logout: false,
         });
-      } else if (item === 'search') {
+      } else if (item === 'addTodo') {
         this.setState({
-          home: false,
-          search: true,
-          profile: false,
-          contactUs: false,
+          todos: false,
+          addTodo: true,
+          logout: false,
         });
-      } else if (item === 'profile') {
+      } else if (item === 'logout') {
         this.setState({
-          home: false,
-          search: false,
-          profile: true,
-          contactUs: false,
-        });
-      } else if (item === 'contactUs') {
-        this.setState({
-          home: false,
-          search: false,
-          profile: false,
-          contactUs: true,
+          todos: false,
+          addTodo: false,
+          logout: true,
         });
       } else {
         this.setState({
-          home: false,
-          search: false,
-          profile: false,
-          contactUs: false,
+          todos: false,
+          addTodo: false,
+          logout: false,
         });
       }
     };
   }
   state = {
-    home: false,
-    search: false,
-    profile: false,
-    contactUs: false,
+    todos: false,
+    addTodo: false,
+    logout: true,
   };
   render() {
     return (
       <View style={styles.container}>
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[styles.seperator, styles.additionalHomeViewStyle]}
-            onPress={() => RootNavigation.navigate('Home')}>
-            <View style={styles.imageView}>
-              <Image
-                source={require('../assets/images/dash_.png')}
-                resizeMode="contain"
-                style={
-                  this.state.home ? styles.focusedImage : styles.unFocusedImage
-                }
-              />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.seperator}
-            onPress={() => RootNavigation.navigate('Search')}>
-            <View style={styles.imageView}>
-              <Image
-                source={require('../assets/images/search.png')}
-                resizeMode="contain"
-                style={
-                  this.state.search
-                    ? styles.focusedImage
-                    : styles.unFocusedImage
-                }
-              />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.seperator}
-            onPress={() => {
-              if (Object.keys(this.props.reduxState.userdata).length === 0) {
-                RootNavigation.navigate('GettingStarted');
-              } else {
-                RootNavigation.navigate('MyAccount');
+        <TouchableOpacity
+          style={styles.seperator}
+          onPress={() => RootNavigation.navigate('Todos')}>
+          <View style={styles.imageView}>
+            <Image
+              source={require('../assets/images/feed.png')}
+              resizeMode="contain"
+              style={
+                this.state.todos ? styles.focusedImage : styles.unFocusedImage
               }
-            }}>
-            <View style={styles.profileImageView}>
-              <Image
-                source={require('../assets/images/user.png')}
-                resizeMode="contain"
-                style={
-                  this.state.profile
-                    ? styles.focusedImage
-                    : styles.unFocusedImage
-                }
-              />
-            </View>
-          </TouchableOpacity>
+            />
+          </View>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.seperator, styles.additionalContactUsViewStyle]}
-            onPress={() => RootNavigation.navigate('ContactUs')}>
-            <View style={styles.imageView}>
-              <Image
-                source={require('../assets/images/call.png')}
-                resizeMode="contain"
-                style={
-                  this.state.contactUs
-                    ? styles.focusedImage
-                    : styles.unFocusedImage
-                }
-              />
-            </View>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.seperator}
+          onPress={() => RootNavigation.navigate('AddTodo')}>
+          <View style={styles.imageView}>
+            <Image
+              source={require('../assets/images/add.png')}
+              resizeMode="contain"
+              style={
+                this.state.addTodo ? styles.focusedImage : styles.unFocusedImage
+              }
+            />
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.seperator}
+          onPress={() => RootNavigation.navigate('Logout')}>
+          <View style={styles.profileImageView}>
+            <Image
+              source={require('../assets/images/profile.png')}
+              resizeMode="contain"
+              style={
+                this.state.logout ? styles.focusedImage : styles.unFocusedImage
+              }
+            />
+          </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -137,18 +97,12 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     height: 60,
-  },
-  footer: {
     flexDirection: 'row',
-    height: 60,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    width: '100%',
-    overflow: 'hidden',
-    borderWidth: 0.5,
-    overflow: 'hidden',
-    backgroundColor: colors.greyDarkTextColor,
+    borderTopWidth: 1,
+    borderColor: colors.greyTextColor,
+    paddingHorizontal: '20%',
   },
+
   additionalContactUsViewStyle: {
     borderRightWidth: 0,
     borderTopRightRadius: 20,
@@ -158,13 +112,10 @@ const styles = StyleSheet.create({
   },
   seperator: {
     flex: 1,
-    borderRightWidth: 1,
-    borderColor: colors.whiteColor,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 8,
   },
-  imageView: {height: 25, width: 25, overflow: 'hidden'},
+  imageView: {height: 35, width: 35, overflow: 'hidden'},
   profileImageView: {height: 35, width: 30, overflow: 'hidden'},
   focusedImage: {
     height: '100%',
@@ -174,7 +125,7 @@ const styles = StyleSheet.create({
   unFocusedImage: {
     height: '100%',
     width: '100%',
-    tintColor: colors.whiteColor,
+    tintColor: colors.greyTextColor,
   },
 });
 

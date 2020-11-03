@@ -3,7 +3,6 @@ import * as actionTypes from '../actions/types';
 const initialState = {
   userdata: {},
   loading: false,
-  todos: [],
 };
 
 export default function (state = initialState, action) {
@@ -22,17 +21,11 @@ export default function (state = initialState, action) {
       return {
         ...state,
         userdata: {},
-        todos: [],
       };
     case actionTypes.SET_USER_DATA:
       return {
         ...state,
         userdata: action.payload,
-      };
-    case actionTypes.SET_TODOS:
-      return {
-        ...state,
-        todos: action.payload,
       };
     default:
       return state;

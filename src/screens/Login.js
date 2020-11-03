@@ -1,15 +1,12 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {
   StyleSheet,
   View,
   Image,
   Text,
   KeyboardAvoidingView,
-  TouchableOpacity,
   ScrollView,
-  Alert,
 } from 'react-native';
-import GlobalHeader from '../components/GlobalHeader';
 import colors from '../constants/colors';
 import fontSizes from '../constants/fontSizes';
 import globalStyling from '../constants/globalStyling';
@@ -29,7 +26,7 @@ class Login extends React.Component {
       this.setState({showError: 'Kindly Fill All The Fields'});
     } else {
       this.setState({showError: false});
-      // this.props.reduxActions.signin(this.props.navigation, user);
+      this.props.reduxActions.signin(this.props.navigation, this.state.name);
     }
   };
 
@@ -49,7 +46,6 @@ class Login extends React.Component {
         keyboardVerticalOffset={40}
         style={globalStyling.container}>
         <View style={globalStyling.container}>
-          {/* <GlobalHeader navigation={this.props.navigation} headingText="" /> */}
           <ScrollView
             contentContainerStyle={{justifyContent: 'center', flexGrow: 1}}>
             <View style={styles.view}>

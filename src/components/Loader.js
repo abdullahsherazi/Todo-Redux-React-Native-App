@@ -9,7 +9,7 @@ class Loader extends React.Component {
   render() {
     return this.props.reduxState.loading ? (
       <View style={styles.fullScreenView}>
-        <ActivityIndicator size="large" color={colors.whiteColor} />
+        <ActivityIndicator size="large" color={colors.themeColor} />
       </View>
     ) : null;
   }

@@ -1,195 +1,150 @@
-import React, { Component } from "react";
-import {
-  Text,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  Dimensions,
-  TextInput,
-  Platform,
-} from "react-native";
-import colors from "../constants/colors";
-import fontSizes from "../constants/fontSizes";
-import globalStyling from "../constants/globalStyling";
-import { bindActionCreators } from "redux";
-import * as reduxActions from "../redux/actions/actions";
-import { connect } from "react-redux";
-const screenWidth = Dimensions.get("window").width;
-import i18n from "../constants/languages";
-import ProductCard from "../components/ProductCard";
-import GlobalHeader from "../components/GlobalHeader";
-import { RTL } from "react-native-easy-localization-and-rtl";
+import React, {Component} from 'react';
+import {Text, StyleSheet, View, TouchableOpacity, FlatList} from 'react-native';
+import colors from '../constants/colors';
+import fontSizes from '../constants/fontSizes';
+import globalStyling from '../constants/globalStyling';
+import {bindActionCreators} from 'redux';
+import * as reduxActions from '../redux/actions/actions';
+import {connect} from 'react-redux';
+import selectedColors from '../constants/selectedColors';
+import GlobalHeader from '../components/GlobalHeader';
+import moment from 'moment';
+import {Swipeable} from 'react-native-gesture-handler';
 
-class SubCat extends Component {
+class Todos extends Component {
   state = {
     selected: 0,
   };
   componentDidMount() {
-    this._unsubscribe = this.props.navigation.addListener("focus", () => {
+    this._unsubscribe = this.props.navigation.addListener('focus', () => {
       global.showBottomTab(true).then(() => {
-        global.setFocused("false");
+        global.setFocused('todos');
       });
     });
-    this.props.reduxActions.getSubCategoryProducts(
-      this.props.reduxState.subCategories[0]
-    );
   }
   componentWillUnmount() {
     this._unsubscribe();
   }
-  renderItem = ({ item, index, separators }) => (
-    <ProductCard
-      onsubmit={() =>
-        this.props.navigation.navigate("ProductPage", {
-          data: item.id,
-        })
-      }
-      image={item.images.length > 0 ? item.images[0].src : null}
-      regularPrices={item.regular_price}
-      price={item.price}
-      name={item.name}
-      item={item}
-      navigation={this.props.navigation}
-    />
-  );
 
-  renderSubCategories = ({ item, index, separators }) => (
-    <Text
-      style={
-        index === this.state.selected
-          ? styles.selectedSubCategory
-          : styles.unSelectedSubCategory
-      }
-      onPress={() => {
-        if (this.state.selected !== index) {
-          this.setState({ selected: index }, () => {
-            this.props.reduxActions.getSubCategoryProducts(
-              this.props.reduxState.subCategories[index]
+  dateToFromNowDaily = (myDate) => {
+    // get from-now for this date
+    var fromNow = moment(myDate).fromNow();
+
+    // ensure the date is displayed with today and yesterday
+    return moment(myDate).calendar(null, {
+      // when the date is closer, specify custom values
+      lastWeek: '[Last] dddd',
+      lastDay: '[Yesterday]',
+      sameDay: '[Today]',
+      nextDay: '[Tomorrow]',
+      nextWeek: 'dddd',
+      // when the date is further away, use from-now functionality
+      sameElse: function () {
+        return '[' + fromNow + ']';
+      },
+    });
+  };
+
+  renderItem = ({item, index, separators}) => (
+    <Swipeable
+      ref={(swipe) => (this.swipeableRef = swipe)}
+      renderLeftActions={() => (
+        <TouchableOpacity
+          style={styles.renderSwipeView}
+          onPress={() => {
+            let userdata = JSON.parse(
+              JSON.stringify(this.props.reduxState.userdata),
             );
-          });
-          this.refs.scrollRefs.scrollToIndex({
-            animated: true,
-            index: index,
-          });
-        }
-      }}
-    >
-      {item.name.replace("&amp;", "&")}
-    </Text>
+            userdata.todos.splice(index, 1);
+            this.props.reduxActions.updateTodo(userdata, this.swipeableRef);
+          }}>
+          <Text style={{color: colors.redErrorColor}}>Tap To Delete</Text>
+        </TouchableOpacity>
+      )}
+      renderRightActions={() => (
+        <View style={styles.renderSwipeView}>
+          <Text style={{color: colors.themeColor}}>Completed</Text>
+        </View>
+      )}
+      onSwipeableRightOpen={() => {
+        let userdata = JSON.parse(
+          JSON.stringify(this.props.reduxState.userdata),
+        );
+        userdata.todos[index].completed = true;
+        this.props.reduxActions.updateTodo(userdata, this.swipeableRef);
+      }}>
+      <View style={styles.containerView}>
+        <View
+          style={[
+            styles.colorView,
+            {backgroundColor: selectedColors[item.colorSelected]},
+          ]}
+        />
+        <View>
+          <Text
+            style={[
+              styles.work,
+              {
+                textDecorationLine: item.completed ? 'line-through' : null,
+                color: item.completed
+                  ? colors.greyTextColor
+                  : colors.blackColor,
+              },
+            ]}>
+            {item.work}
+          </Text>
+          <Text
+            style={[
+              styles.date,
+              {
+                color: item.completed
+                  ? colors.greyTextColor
+                  : colors.blackColor,
+              },
+            ]}>
+            Due {this.dateToFromNowDaily(item.dueDate)}
+          </Text>
+        </View>
+      </View>
+    </Swipeable>
   );
 
   render() {
-    const RTLStyles = RTL.getSheet(i18n);
     return (
       <View style={globalStyling.container}>
-        <GlobalHeader
-          navigation={this.props.navigation}
-          backArrow={true}
-          appIcon={true}
-          cart={true}
-          // menu={true}
+        <GlobalHeader navigation={this.props.navigation} headingText={`Todo`} />
+        <FlatList
+          style={globalStyling.flatlist}
+          ListEmptyComponent={<Text style={styles.noTodos}>No Todos!</Text>}
+          showsVerticalScrollIndicator={false}
+          renderItem={this.renderItem}
+          data={this.props.reduxState.userdata.todos}
+          removeClippedSubviews={true}
+          keyExtractor={(item, i) => i.toString()}
         />
-
-        <TouchableOpacity
-          style={styles.searchView}
-          onPress={() => this.props.navigation.navigate("Search")}
-        >
-          <TextInput
-            placeholder="Search"
-            style={styles.textInput}
-            editable={false}
-          />
-          <TouchableOpacity style={styles.imageView}>
-            <Image
-              source={require("../assets/images/search.png")}
-              resizeMode="contain"
-              style={globalStyling.imageStyle}
-            />
-          </TouchableOpacity>
-        </TouchableOpacity>
-        <View>
-          <FlatList
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            renderItem={this.renderSubCategories}
-            data={this.props.reduxState.subCategories}
-            removeClippedSubviews={true}
-            keyExtractor={(item) => item.id.toString()}
-            inverted={RTL.isRTL(i18n) ? true : false}
-            style={styles.subCategoryFlatlist}
-            ref="scrollRefs"
-          />
-        </View>
-
-        {this.props.reduxState.subCategoryProducts.length === 0 &&
-        this.props.reduxState.loading === false ? (
-          <View style={styles.containerView}>
-            <Text style={globalStyling.errorText}>
-              {i18n.productsDoesntExistSubCategory}
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            style={globalStyling.flatlist}
-            showsVerticalScrollIndicator={false}
-            columnWrapperStyle={[
-              styles.columnWrapperStyleFlatlist,
-              RTLStyles.containerRow,
-            ]}
-            renderItem={this.renderItem}
-            data={this.props.reduxState.subCategoryProducts}
-            // numColumns={screenWidth < 500 ? 3 : 4}
-            numColumns={2}
-            removeClippedSubviews={true}
-            keyExtractor={(item) => item.id}
-          />
-        )}
       </View>
     );
   }
 }
 const styles = StyleSheet.create({
-  searchView: {
-    paddingVertical: Platform.OS === "ios" ? 10 : null,
-    borderRadius: 10,
-    borderColor: colors.greyTextColor,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "90%",
-    alignSelf: "center",
-  },
-  textInput: { width: "90%" },
-  imageView: { height: 25, width: 25, overflow: "hidden" },
+  noTodos: {color: colors.redErrorColor, textAlign: 'center'},
+  renderSwipeView: {justifyContent: 'center', marginHorizontal: 10},
   containerView: {
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
   },
-  columnWrapperStyleFlatlist: {
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
-    flexDirection: "row",
+  colorView: {
+    height: 20,
+    width: 20,
+    borderRadius: 20,
+    marginRight: 10,
   },
-  selectedSubCategory: {
-    margin: 10,
-    fontSize: fontSizes.normal,
-    color: colors.blackColor,
-    fontWeight: "bold",
-    borderColor: colors.blackColor,
-    borderBottomWidth: 3,
-    marginBottom: 0,
+  work: {
+    fontWeight: 'bold',
+    fontSize: fontSizes.large,
   },
-  unSelectedSubCategory: {
-    margin: 10,
-    marginBottom: 0,
-    fontSize: fontSizes.normal,
-    color: colors.greyColor,
-  },
-  subCategoryFlatlist: { width: "90%", alignSelf: "center" },
+  date: {fontSize: fontSizes.normal},
 });
 
 const mapStateToProps = (state) => ({
@@ -200,4 +155,4 @@ const mapDispatchToProps = (dispatch) => ({
   reduxActions: bindActionCreators(reduxActions, dispatch),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SubCat);
+export default connect(mapStateToProps, mapDispatchToProps)(Todos);

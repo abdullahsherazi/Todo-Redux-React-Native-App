@@ -1,305 +1,137 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {
-  Text,
   StyleSheet,
   View,
-  ScrollView,
+  Text,
   KeyboardAvoidingView,
-  Image,
   TouchableOpacity,
+  ScrollView,
+  Pressable,
+  TextInput,
 } from 'react-native';
 import colors from '../constants/colors';
-import fontSizes from '../constants/fontSizes';
+import selectedColors from '../constants/selectedColors';
+import globalStyling from '../constants/globalStyling';
 import {bindActionCreators} from 'redux';
 import * as reduxActions from '../redux/actions/actions';
 import {connect} from 'react-redux';
-import GlobalButton from '../components/GlobalButton';
-import GlobalInput from '../components/GlobalInput';
-import globalStyling from '../constants/globalStyling';
-import moment from 'moment';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import i18n from '../constants/languages';
 import GlobalHeader from '../components/GlobalHeader';
+import GlobalButton from '../components/GlobalButton';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import moment from 'moment';
 
-class SignUp extends Component {
-  constructor(props) {
-    super(props);
-    this.email = React.createRef();
-    this.phoneNumber = React.createRef();
-    this.password = React.createRef();
-    this.confirmPassword = React.createRef();
-    this.state = {
-      emailAddress: '',
-      password: '',
-      error: false,
-      validEmail: false,
-      fullName: '',
-      phoneNumber: '',
-      confirmPassword: '',
-      gender: '',
-      showDatePicker: false,
-      dateOfBirth: false,
-      showPassword: false,
-      showConfirmPassword: false,
-      genderMaleSelected: false,
-      genderFemaleSelected: false,
-    };
-  }
-  signup = () => {
-    // this.props.reduxActions.signup(this.props.navigation, user);
-    if (
-      this.state.emailAddress === '' ||
-      this.state.password === '' ||
-      this.state.fullName === '' ||
-      this.state.phoneNumber === '' ||
-      // this.state.gender === "" ||
-      // this.state.dateOfBirth === "" ||
-      this.state.confirmPassword === ''
-      // this.state.genderMaleSelected === !this.state.genderFemaleSelected
-    ) {
-      this.setState({error: i18n.kindlyFillAllTheFields});
-    } else if (this.state.gender === '') {
-      this.setState({error: i18n.kindlySelectTheGender});
-    } else if (this.state.validEmail === false) {
-      this.setState({error: i18n.kindlyEnterCorrectEmail});
-    } else if (this.state.password !== this.state.confirmPassword) {
-      this.setState({error: i18n.passwordAndConfirmPasswordDoesnMatch});
-    } else if (this.state.password.length < 8) {
-      this.setState({error: i18n.passwordLengthShoultBeGreaterThan8});
-    } else if (this.state.phoneNumber.trim().length !== 8) {
-      this.setState({error: i18n.phoneNumberLengthShouldBeGreaterThan8});
-    } else {
-      this.setState({error: false});
-
-      let user = {
-        name: this.state.fullName,
-        email: this.state.emailAddress,
-        billing_phone: this.state.phoneNumber,
-        gender: this.state.gender,
-        date_of_birth: this.state.dateOfBirth,
-        password: this.state.password,
-        action: 'register',
-      };
-      this.props.reduxActions.signup(
-        this.props.navigation,
-        user,
-        typeof this.props.route.params === 'undefined' ? false : true,
-      );
-    }
+class AddTodo extends React.Component {
+  state = {
+    showDatePicker: false,
+    colorSelected: 0,
+    work: '',
+    due: '',
   };
-
   componentDidMount() {
     this._unsubscribe = this.props.navigation.addListener('focus', () => {
-      global.showBottomTab(false);
+      global.showBottomTab(true).then(() => {
+        global.setFocused('addTodo');
+      });
     });
   }
   componentWillUnmount() {
     this._unsubscribe();
   }
+  addTodo = () => {
+    if (this.state.work === '') {
+      this.setState({showError: 'Kindly Fill To Do Field'});
+    } else if (this.state.due === '') {
+      this.setState({showError: 'Kindly Select The Due Date'});
+    } else {
+      let data = {
+        name: this.props.reduxState.userdata.name,
+        todos: [
+          ...this.props.reduxState.userdata.todos,
+          {
+            dueDate: this.state.due,
+            work: this.state.work,
+            colorSelected: this.state.colorSelected,
+            completed: false,
+          },
+        ],
+      };
+      this.setState({showError: false});
+      this.props.reduxActions.addTodo(this.props.navigation, data);
+    }
+  };
+
   render() {
     return (
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        behavior={Platform.OS == 'ios' ? 'padding' : null}
         keyboardVerticalOffset={40}
         style={globalStyling.container}>
-        <View style={globalStyling.container}>
-          <GlobalHeader
-            navigation={this.props.navigation}
-            backArrow={true}
-            // appIcon={true}
-          />
-          <ScrollView>
-            <View style={styles.logoView}>
-              <Image
-                source={require('../assets/images/appIcon.png')}
-                resizeMode="contain"
-                style={globalStyling.imageStyle}
-              />
-            </View>
-            <Text style={globalStyling.headingText}>{i18n.signUp}</Text>
-            <GlobalInput
-              ref=""
-              submitEditing={() => {
-                this.email.current.focus();
-              }}
-              returnKeyType="next"
-              marginTop={10}
-              paddingLeft={20}
-              borderRadius={10}
-              width={'80%'}
-              placeholder={'Full Name*'}
-              backgroundColor={colors.whiteColor}
-              changeText={(fullName) => this.setState({fullName})}
+        <ScrollView>
+          <View style={globalStyling.container}>
+            <GlobalHeader
+              navigation={this.props.navigation}
+              headingText={`Add`}
             />
 
-            <GlobalInput
-              ref={this.email}
-              submitEditing={() => {
-                this.phoneNumber.current.focus();
+            <TextInput
+              style={styles.textArea}
+              placeholder="What do you need to do?"
+              placeholderTextColor={colors.greyTextColor}
+              numberOfLines={10}
+              multiline={true}
+              onChangeText={(work) => {
+                this.setState({work});
               }}
-              returnKeyType="next"
-              paddingLeft={20}
-              borderRadius={10}
-              width={'80%'}
-              placeholder={'Email*'}
-              backgroundColor={colors.whiteColor}
-              changeText={(email) => {
-                const emailCheckRegex = /\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
-                this.setState({emailAddress: email});
-                if (emailCheckRegex.test(String(email)) === true) {
-                  this.setState({validEmail: true});
-                } else if (emailCheckRegex.test(String(email)) === false) {
-                  this.setState({validEmail: false});
-                }
-              }}
-              keyboardType="email-address"
             />
 
-            <GlobalInput
-              ref={this.phoneNumber}
-              submitEditing={() => {
-                this.password.current.focus();
-              }}
-              returnKeyType="next"
-              marginTop={10}
-              paddingLeft={20}
-              borderRadius={10}
-              width={'80%'}
-              placeholder={'Phone*'}
-              maxLength={8}
-              keyboardType="phone-pad"
-              backgroundColor={colors.whiteColor}
-              changeText={(phoneNumber) => this.setState({phoneNumber})}
-            />
-            <View style={styles.rowGender}>
-              <GlobalButton
-                linearGradient={this.state.genderMaleSelected ? true : false}
-                backgroundColor={
-                  this.state.genderMaleSelected
-                    ? colors.themeColor
-                    : colors.whiteColor
-                }
-                borderWidth={this.state.genderMaleSelected ? null : 1}
-                borderColor={colors.googleGrey}
-                marginTop={20}
-                marginBottom={10}
-                borderRadius={10}
-                width={'35%'}
-                text={i18n.male}
-                textColor={colors.blackColor}
-                submit={() => {
-                  this.setState({
-                    gender: 'm',
-                    genderMaleSelected: true,
-                    genderFemaleSelected: false,
-                  });
-                }}
-              />
-              <GlobalButton
-                linearGradient={this.state.genderFemaleSelected ? true : false}
-                backgroundColor={
-                  this.state.genderFemaleSelected
-                    ? colors.themeColor
-                    : colors.whiteColor
-                }
-                borderWidth={this.state.genderFemaleSelected ? null : 1}
-                borderColor={colors.googleGrey}
-                marginTop={20}
-                marginBottom={10}
-                borderRadius={10}
-                width={'35%'}
-                text={i18n.female}
-                textColor={colors.blackColor}
-                submit={() => {
-                  this.setState({
-                    gender: 'f',
-                    genderMaleSelected: false,
-                    genderFemaleSelected: true,
-                  });
-                }}
-              />
-            </View>
             <TouchableOpacity
-              style={styles.datePickerTouchableOpacity}
+              style={styles.dateTouchableOpacity}
               onPress={() => {
                 this.setState({showDatePicker: true});
               }}>
-              <Text style={styles.dateText}>
-                {this.state.dateOfBirth
-                  ? this.state.dateOfBirth
-                  : 'Date of Birth'}
+              <Text style={styles.text}>
+                {this.state.due !== ''
+                  ? moment(this.state.due).format('DD-MM-YYYY')
+                  : 'When it is due?'}
               </Text>
             </TouchableOpacity>
+            <View style={styles.colorContainerView}>
+              {selectedColors.map((item, i) => {
+                return (
+                  <Pressable
+                    style={[
+                      styles.colorPressable,
 
-            <GlobalInput
-              ref={this.password}
-              submitEditing={() => {
-                this.confirmPassword.current.focus();
-              }}
-              returnKeyType="next"
-              marginTop={10}
-              paddingLeft={20}
-              borderRadius={10}
-              width={'80%'}
-              placeholder={'Password*'}
-              backgroundColor={colors.whiteColor}
-              changeText={(password) => this.setState({password})}
-              secureTextEntry={this.state.showPassword ? false : true}
-              visible={this.state.showPassword ? false : true}
-              notVisible={this.state.showPassword ? true : false}
-              changePasswordState={() => {
-                this.setState({
-                  showPassword: !this.state.showPassword,
-                });
-              }}
-            />
-
-            <GlobalInput
-              ref={this.confirmPassword}
-              submitEditing={() => {
-                // this.phoneNumber.current.focus();
-              }}
-              returnKeyType="done"
-              marginTop={10}
-              paddingLeft={20}
-              borderRadius={10}
-              width={'80%'}
-              placeholder={'Confirm Password*'}
-              backgroundColor={colors.whiteColor}
-              changeText={(confirmPassword) => this.setState({confirmPassword})}
-              secureTextEntry={this.state.showConfirmPassword ? false : true}
-              visible={this.state.showConfirmPassword ? false : true}
-              notVisible={this.state.showConfirmPassword ? true : false}
-              changePasswordState={() => {
-                this.setState({
-                  showConfirmPassword: !this.state.showConfirmPassword,
-                });
-              }}
-            />
-            {this.state.error ? (
-              <Text style={globalStyling.errorText}>{this.state.error}</Text>
-            ) : null}
-
+                      {
+                        backgroundColor: item,
+                        opacity: this.state.colorSelected == i ? 1 : 0.3,
+                      },
+                    ]}
+                    key={i}
+                    onPress={() => {
+                      this.setState({colorSelected: i});
+                    }}></Pressable>
+                );
+              })}
+            </View>
             <GlobalButton
-              linearGradient={true}
-              marginTop={10}
-              marginBottom={20}
-              borderRadius={10}
-              width={'80%'}
-              text={i18n.register}
-              fontWeight="bold"
+              backgroundColor={colors.themeColor}
+              marginTop={20}
+              borderWidth={0.5}
+              marginBottom={10}
+              borderRadius={5}
+              width="90%"
+              text={'Add'}
+              textColor={colors.whiteColor}
               submit={() => {
-                // this.signin()
-                this.signup();
+                this.addTodo();
               }}
             />
-            <TouchableOpacity
-              style={{marginVertical: 10}}
-              onPress={() => this.props.navigation.navigate('SignIn')}>
-              <Text style={{textAlign: 'center'}}>
-                {i18n.loginWithExistingAccount}
+            {this.state.showError ? (
+              <Text style={globalStyling.errorText}>
+                {this.state.showError}
               </Text>
-            </TouchableOpacity>
+            ) : null}
             <DateTimePickerModal
               isVisible={this.state.showDatePicker}
               mode="date"
@@ -307,46 +139,61 @@ class SignUp extends Component {
               onConfirm={(date) => {
                 this.setState({
                   showDatePicker: false,
-                  dateOfBirth: moment(date).format('DD-MM-YYYY'),
+                  due: date,
                 });
               }}
               onCancel={() => this.setState({showDatePicker: false})}
               cancelTextIOS="cancel"
               confirmTextIOS="confirm"
             />
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     );
   }
 }
 const styles = StyleSheet.create({
-  rowGender: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-  },
-  logoView: {
-    height: 150,
-    width: 150,
+  textArea: {
+    textAlignVertical: 'top',
+    height: 100,
+    width: '90%',
     alignSelf: 'center',
-    marginVertical: 10,
-  },
-  datePickerTouchableOpacity: {
-    marginTop: 10,
-    paddingLeft: 20,
-    borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.searchBarBorderColor,
-    width: '80%',
-    height: 43,
-    backgroundColor: colors.whiteColor,
-    alignSelf: 'center',
+    borderRadius: 5,
+    borderColor: colors.greyTextColor,
+    marginTop: 10,
+    paddingHorizontal: 10,
   },
-  dateText: {
-    color: colors.blackColor,
-    paddingVertical: 10,
-    fontSize: fontSizes.normal,
+  colorContainerView: {
+    width: '90%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginTop: 30,
+  },
+  view: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingBottom: 10,
+  },
+  text: {color: colors.greyTextColor},
+  dateTouchableOpacity: {
+    width: '90%',
+    alignSelf: 'center',
+    paddingLeft: 10,
+    borderColor: colors.greyTextColor,
+    borderWidth: 1,
+    borderRadius: 5,
+    backgroundColor: colors.whiteColor,
+    height: 45,
+    marginTop: 10,
+    justifyContent: 'center',
+  },
+  colorPressable: {
+    height: 50,
+    width: 50,
+    borderRadius: 50,
   },
 });
 
@@ -358,4 +205,4 @@ const mapDispatchToProps = (dispatch) => ({
   reduxActions: bindActionCreators(reduxActions, dispatch),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
+export default connect(mapStateToProps, mapDispatchToProps)(AddTodo);
