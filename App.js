@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {StatusBar, View, Text} from 'react-native';
 import StackNavigator from './src/navigations/StackNavigator';
 import BottomTab from './src/components/BottomTab';
@@ -9,47 +9,42 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import globalStyling from './src/constants/globalStyling';
 import colors from './src/constants/colors';
 
-export default class App extends React.Component {
-  state = {showBottomTab: false, appContainerColor: 'white'};
+export default ({}) => {
+  const [showBottomTab, setBottomTab] = useState(false);
+  const [appContainerColor, setAppContainerColor] = useState('white');
 
-  componentDidMount() {
+  useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
 
     global.showBottomTab = async (showBottomTabState) => {
-      this.setState({showBottomTab: showBottomTabState}, () => {
-        return;
-      });
+      setBottomTab(showBottomTabState);
     };
     global.setAppContainerColor = (appContainerColor) => {
-      this.setState({
-        appContainerColor,
-      });
+      setAppContainerColor(appContainerColor);
     };
-  }
+  }, []);
 
-  render() {
-    return (
-      <Provider store={store}>
-        <StatusBar
-          barStyle="light-content"
-          hidden={false}
-          backgroundColor={colors.themeColor}
-          translucent={true}
-        />
-        <SafeAreaView
-          style={
-            this.state.appContainerColor === 'white'
-              ? globalStyling.appContainerWhite
-              : globalStyling.appContainerThemeColor
-          }>
-          <View style={globalStyling.appContainerView}>
-            <StackNavigator />
-            {this.state.showBottomTab ? <BottomTab /> : null}
-            <Loader />
-          </View>
-        </SafeAreaView>
-      </Provider>
-    );
-  }
-}
+  return (
+    <Provider store={store}>
+      <StatusBar
+        barStyle="light-content"
+        hidden={false}
+        backgroundColor={colors.themeColor}
+        translucent={true}
+      />
+      <SafeAreaView
+        style={
+          appContainerColor === 'white'
+            ? globalStyling.appContainerWhite
+            : globalStyling.appContainerThemeColor
+        }>
+        <View style={globalStyling.appContainerView}>
+          <StackNavigator />
+          {showBottomTab ? <BottomTab /> : null}
+          <Loader />
+        </View>
+      </SafeAreaView>
+    </Provider>
+  );
+};

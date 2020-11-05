@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {Text, StyleSheet, View, TouchableOpacity, FlatList} from 'react-native';
 import colors from '../constants/colors';
 import fontSizes from '../constants/fontSizes';
@@ -11,22 +11,17 @@ import GlobalHeader from '../components/GlobalHeader';
 import moment from 'moment';
 import {Swipeable} from 'react-native-gesture-handler';
 
-class Todos extends Component {
-  state = {
-    selected: 0,
-  };
-  componentDidMount() {
-    this._unsubscribe = this.props.navigation.addListener('focus', () => {
+const Todos = ({navigation, reduxState, reduxActions}) => {
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
       global.showBottomTab(true).then(() => {
         global.setFocused('todos');
       });
     });
-  }
-  componentWillUnmount() {
-    this._unsubscribe();
-  }
+    return unsubscribe;
+  }, []);
 
-  dateToFromNowDaily = (myDate) => {
+  const dateToFromNowDaily = (myDate) => {
     // get from-now for this date
     var fromNow = moment(myDate).fromNow();
 
@@ -45,18 +40,19 @@ class Todos extends Component {
     });
   };
 
-  renderItem = ({item, index, separators}) => (
+  let swipeableRef = useRef(null);
+  const renderItem = ({item, index, separators}) => (
     <Swipeable
-      ref={(swipe) => (this.swipeableRef = swipe)}
+      ref={(swipe) => {
+        swipeableRef = swipe;
+      }}
       renderLeftActions={() => (
         <TouchableOpacity
           style={styles.renderSwipeView}
           onPress={() => {
-            let userdata = JSON.parse(
-              JSON.stringify(this.props.reduxState.userdata),
-            );
+            let userdata = JSON.parse(JSON.stringify(reduxState.userdata));
             userdata.todos.splice(index, 1);
-            this.props.reduxActions.updateTodo(userdata, this.swipeableRef);
+            reduxActions.updateTodo(userdata);
           }}>
           <Text style={{color: colors.redErrorColor}}>Tap To Delete</Text>
         </TouchableOpacity>
@@ -67,11 +63,9 @@ class Todos extends Component {
         </View>
       )}
       onSwipeableRightOpen={() => {
-        let userdata = JSON.parse(
-          JSON.stringify(this.props.reduxState.userdata),
-        );
+        let userdata = JSON.parse(JSON.stringify(reduxState.userdata));
         userdata.todos[index].completed = true;
-        this.props.reduxActions.updateTodo(userdata, this.swipeableRef);
+        reduxActions.updateTodo(userdata, swipeableRef);
       }}>
       <View style={styles.containerView}>
         <View
@@ -102,30 +96,30 @@ class Todos extends Component {
                   : colors.blackColor,
               },
             ]}>
-            Due {this.dateToFromNowDaily(item.dueDate)}
+            Due {dateToFromNowDaily(item.dueDate)} at{' '}
+            {moment(item.dueDate).format('hh:mm A')}
           </Text>
         </View>
       </View>
     </Swipeable>
   );
 
-  render() {
-    return (
-      <View style={globalStyling.container}>
-        <GlobalHeader navigation={this.props.navigation} headingText={`Todo`} />
-        <FlatList
-          style={globalStyling.flatlist}
-          ListEmptyComponent={<Text style={styles.noTodos}>No Todos!</Text>}
-          showsVerticalScrollIndicator={false}
-          renderItem={this.renderItem}
-          data={this.props.reduxState.userdata.todos}
-          removeClippedSubviews={true}
-          keyExtractor={(item, i) => i.toString()}
-        />
-      </View>
-    );
-  }
-}
+  return (
+    <View style={globalStyling.container}>
+      <GlobalHeader navigation={navigation} headingText={`Todo`} />
+      <FlatList
+        style={globalStyling.flatlist}
+        ListEmptyComponent={<Text style={styles.noTodos}>No Todos!</Text>}
+        showsVerticalScrollIndicator={false}
+        renderItem={renderItem}
+        data={reduxState.userdata.todos}
+        removeClippedSubviews={true}
+        keyExtractor={(item, i) => i.toString()}
+      />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   noTodos: {color: colors.redErrorColor, textAlign: 'center'},
   renderSwipeView: {justifyContent: 'center', marginHorizontal: 10},

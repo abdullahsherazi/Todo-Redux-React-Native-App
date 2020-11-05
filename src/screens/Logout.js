@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import colors from '../constants/colors';
 import globalStyling from '../constants/globalStyling';
@@ -8,46 +8,43 @@ import {connect} from 'react-redux';
 import GlobalHeader from '../components/GlobalHeader';
 import GlobalButton from '../components/GlobalButton';
 
-class Logout extends React.Component {
-  componentDidMount() {
-    this._unsubscribe = this.props.navigation.addListener('focus', () => {
+const Logout = ({navigation, reduxState, reduxActions}) => {
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
       global.showBottomTab(true).then(() => {
         global.setFocused('logout');
       });
     });
-  }
-  componentWillUnmount() {
-    this._unsubscribe();
-  }
+    return unsubscribe;
+  }, []);
 
-  render() {
-    return (
-      <View style={globalStyling.container}>
-        <GlobalHeader
-          navigation={this.props.navigation}
-          headingText={`Hello, ${this.props.reduxState.userdata.name}`}
+  return (
+    <View style={globalStyling.container}>
+      <GlobalHeader
+        navigation={navigation}
+        headingText={`Hello, ${reduxState.userdata.name}`}
+      />
+
+      <View style={styles.view}>
+        <GlobalButton
+          backgroundColor={colors.whiteColor}
+          borderColor={colors.greyColor}
+          marginTop={20}
+          borderWidth={0.5}
+          marginBottom={10}
+          borderRadius={5}
+          width="90%"
+          text={'Logout'}
+          textColor={colors.redErrorColor}
+          submit={() => {
+            reduxActions.logout(navigation);
+          }}
         />
-
-        <View style={styles.view}>
-          <GlobalButton
-            backgroundColor={colors.whiteColor}
-            borderColor={colors.greyColor}
-            marginTop={20}
-            borderWidth={0.5}
-            marginBottom={10}
-            borderRadius={5}
-            width="90%"
-            text={'Logout'}
-            textColor={colors.redErrorColor}
-            submit={() => {
-              this.props.reduxActions.logout(this.props.navigation);
-            }}
-          />
-        </View>
       </View>
-    );
-  }
-}
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   view: {
     flex: 1,

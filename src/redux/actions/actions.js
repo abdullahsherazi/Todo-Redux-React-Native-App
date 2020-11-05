@@ -90,6 +90,6 @@ export const updateTodo = (userdata, swipeRef) => async (dispatch) => {
       type: actionTypes.SET_USER_DATA,
       payload: userdata,
     });
-    swipeRef.close();
+    if (swipeRef !== undefined) swipeRef.close();
   });
 };

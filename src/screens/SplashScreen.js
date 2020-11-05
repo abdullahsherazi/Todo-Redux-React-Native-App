@@ -1,53 +1,49 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Animated, StyleSheet} from 'react-native';
 import {bindActionCreators} from 'redux';
 import * as reduxActions from '../redux/actions/actions';
 import {connect} from 'react-redux';
 import colors from '../constants/colors';
 
-class SplashScreen extends React.Component {
-  constructor() {
-    super();
-    this.springValue = new Animated.Value(0.4);
-  }
-  componentDidMount() {
-    global.setAppContainerColor(colors.themeColor);
-    this.spring();
-    let timeOutNavigate = setTimeout(() => {
-      this.props.reduxActions.checkUser(this.props.navigation);
-      clearTimeout(timeOutNavigate);
-    }, 3000);
+const SplashScreen = ({navigation, reduxState, reduxActions}) => {
+  let springValue = new Animated.Value(0.4);
 
-    this._unsubscribe = this.props.navigation.addListener('focus', () => {
-      global.showBottomTab(false);
-    });
-  }
-  spring() {
-    Animated.spring(this.springValue, {
+  let spring = () => {
+    Animated.spring(springValue, {
       toValue: 1,
       friction: 1,
       useNativeDriver: true,
     }).start();
-  }
-  componentWillUnmount() {
-    this._unsubscribe();
-  }
-  render() {
-    return (
-      <View style={styles.container}>
-        <Animated.Image
-          style={{
-            width: 180,
-            height: 180,
-            transform: [{scale: this.springValue}],
-          }}
-          resizeMode="contain"
-          source={require('../assets/images/appIcon.png')}
-        />
-      </View>
-    );
-  }
-}
+  };
+
+  useEffect(() => {
+    global.setAppContainerColor(colors.themeColor);
+    spring();
+    let timeOutNavigate = setTimeout(() => {
+      reduxActions.checkUser(navigation);
+      clearTimeout(timeOutNavigate);
+    }, 3000);
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      global.showBottomTab(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Animated.Image
+        style={{
+          width: 180,
+          height: 180,
+          transform: [{scale: springValue}],
+        }}
+        resizeMode="contain"
+        source={require('../assets/images/appIcon.png')}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

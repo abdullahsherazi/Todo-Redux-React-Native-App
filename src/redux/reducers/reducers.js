@@ -23,6 +23,7 @@ export default function (state = initialState, action) {
         userdata: {},
       };
     case actionTypes.SET_USER_DATA:
+      console.log(action.payload);
       return {
         ...state,
         userdata: action.payload,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   View,
@@ -20,138 +20,129 @@ import GlobalButton from '../components/GlobalButton';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
 
-class AddTodo extends React.Component {
-  state = {
-    showDatePicker: false,
-    colorSelected: 0,
-    work: '',
-    due: '',
-  };
-  componentDidMount() {
-    this._unsubscribe = this.props.navigation.addListener('focus', () => {
-      global.showBottomTab(true).then(() => {
-        global.setFocused('addTodo');
-      });
-    });
-  }
-  componentWillUnmount() {
-    this._unsubscribe();
-  }
-  addTodo = () => {
-    if (this.state.work === '') {
-      this.setState({showError: 'Kindly Fill To Do Field'});
-    } else if (this.state.due === '') {
-      this.setState({showError: 'Kindly Select The Due Date'});
+const AddTodo = ({navigation, reduxState, reduxActions}) => {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [colorSelected, setColorSelected] = useState(0);
+  const [work, setWork] = useState('');
+  const [due, setDue] = useState('');
+  const [showError, setError] = useState(false);
+
+  let addTodo = () => {
+    if (work === '') {
+      setError('Kindly Fill To Do Field');
+    } else if (due === '') {
+      setError('Kindly Select The Due Date');
     } else {
       let data = {
-        name: this.props.reduxState.userdata.name,
+        name: reduxState.userdata.name,
         todos: [
-          ...this.props.reduxState.userdata.todos,
+          ...reduxState.userdata.todos,
           {
-            dueDate: this.state.due,
-            work: this.state.work,
-            colorSelected: this.state.colorSelected,
+            dueDate: due,
+            work: work,
+            colorSelected: colorSelected,
             completed: false,
           },
         ],
       };
-      this.setState({showError: false});
-      this.props.reduxActions.addTodo(this.props.navigation, data);
+      setError(false);
+      reduxActions.addTodo(navigation, data);
     }
   };
 
-  render() {
-    return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS == 'ios' ? 'padding' : null}
-        keyboardVerticalOffset={40}
-        style={globalStyling.container}>
-        <ScrollView>
-          <View style={globalStyling.container}>
-            <GlobalHeader
-              navigation={this.props.navigation}
-              headingText={`Add`}
-            />
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      global.showBottomTab(true).then(() => {
+        global.setFocused('addTodo');
+      });
+    });
+    return unsubscribe;
+  }, []);
 
-            <TextInput
-              style={styles.textArea}
-              placeholder="What do you need to do?"
-              placeholderTextColor={colors.greyTextColor}
-              numberOfLines={10}
-              multiline={true}
-              onChangeText={(work) => {
-                this.setState({work});
-              }}
-            />
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS == 'ios' ? 'padding' : null}
+      keyboardVerticalOffset={40}
+      style={globalStyling.container}>
+      <ScrollView>
+        <View style={globalStyling.container}>
+          <GlobalHeader navigation={navigation} headingText={`Add`} />
 
-            <TouchableOpacity
-              style={styles.dateTouchableOpacity}
-              onPress={() => {
-                this.setState({showDatePicker: true});
-              }}>
-              <Text style={styles.text}>
-                {this.state.due !== ''
-                  ? moment(this.state.due).format('DD-MM-YYYY')
-                  : 'When it is due?'}
-              </Text>
-            </TouchableOpacity>
-            <View style={styles.colorContainerView}>
-              {selectedColors.map((item, i) => {
-                return (
-                  <Pressable
-                    style={[
-                      styles.colorPressable,
+          <TextInput
+            style={styles.textArea}
+            placeholder="What do you need to do?"
+            placeholderTextColor={colors.greyTextColor}
+            numberOfLines={10}
+            multiline={true}
+            onChangeText={(work) => {
+              setWork(work);
+            }}
+          />
 
-                      {
-                        backgroundColor: item,
-                        opacity: this.state.colorSelected == i ? 1 : 0.3,
-                      },
-                    ]}
-                    key={i}
-                    onPress={() => {
-                      this.setState({colorSelected: i});
-                    }}></Pressable>
-                );
-              })}
-            </View>
-            <GlobalButton
-              backgroundColor={colors.themeColor}
-              marginTop={20}
-              borderWidth={0.5}
-              marginBottom={10}
-              borderRadius={5}
-              width="90%"
-              text={'Add'}
-              textColor={colors.whiteColor}
-              submit={() => {
-                this.addTodo();
-              }}
-            />
-            {this.state.showError ? (
-              <Text style={globalStyling.errorText}>
-                {this.state.showError}
-              </Text>
-            ) : null}
-            <DateTimePickerModal
-              isVisible={this.state.showDatePicker}
-              mode="date"
-              // minimumDate={new Date()}
-              onConfirm={(date) => {
-                this.setState({
-                  showDatePicker: false,
-                  due: date,
-                });
-              }}
-              onCancel={() => this.setState({showDatePicker: false})}
-              cancelTextIOS="cancel"
-              confirmTextIOS="confirm"
-            />
+          <TouchableOpacity
+            style={styles.dateTouchableOpacity}
+            onPress={() => {
+              setShowDatePicker(true);
+            }}>
+            <Text style={styles.text}>
+              {due !== ''
+                ? moment(due).format('DD-MM-YYYY hh:mm A')
+                : 'When it is due?'}
+            </Text>
+          </TouchableOpacity>
+          <View style={styles.colorContainerView}>
+            {selectedColors.map((item, i) => {
+              return (
+                <Pressable
+                  style={[
+                    styles.colorPressable,
+
+                    {
+                      backgroundColor: item,
+                      opacity: colorSelected == i ? 1 : 0.3,
+                    },
+                  ]}
+                  key={i}
+                  onPress={() => {
+                    setColorSelected(i);
+                  }}></Pressable>
+              );
+            })}
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    );
-  }
-}
+          <GlobalButton
+            backgroundColor={colors.themeColor}
+            marginTop={20}
+            borderWidth={0.5}
+            marginBottom={10}
+            borderRadius={5}
+            width="90%"
+            text={'Add'}
+            textColor={colors.whiteColor}
+            submit={() => {
+              addTodo();
+            }}
+          />
+          {showError ? (
+            <Text style={globalStyling.errorText}>{showError}</Text>
+          ) : null}
+          <DateTimePickerModal
+            isVisible={showDatePicker}
+            mode="datetime"
+            // minimumDate={new Date()}
+            onConfirm={(date) => {
+              setShowDatePicker(false);
+              setDue(date);
+            }}
+            onCancel={() => setShowDatePicker(false)}
+            cancelTextIOS="cancel"
+            confirmTextIOS="confirm"
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+};
+
 const styles = StyleSheet.create({
   textArea: {
     textAlignVertical: 'top',
